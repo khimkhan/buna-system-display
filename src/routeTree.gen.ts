@@ -10,33 +10,115 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ConstellationsRouteImport } from './routes/constellations'
+import { Route as DetectionLabRouteImport } from './routes/detection-lab'
+import { Route as MethodologyRouteImport } from './routes/methodology'
+import { Route as MissionControlRouteImport } from './routes/mission-control'
+import { Route as TimelineRouteImport } from './routes/timeline'
+import { Route as PlanetsSlugRouteImport } from './routes/planets.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConstellationsRoute = ConstellationsRouteImport.update({
+  id: '/constellations',
+  path: '/constellations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DetectionLabRoute = DetectionLabRouteImport.update({
+  id: '/detection-lab',
+  path: '/detection-lab',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MethodologyRoute = MethodologyRouteImport.update({
+  id: '/methodology',
+  path: '/methodology',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MissionControlRoute = MissionControlRouteImport.update({
+  id: '/mission-control',
+  path: '/mission-control',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TimelineRoute = TimelineRouteImport.update({
+  id: '/timeline',
+  path: '/timeline',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlanetsSlugRoute = PlanetsSlugRouteImport.update({
+  id: '/planets/$slug',
+  path: '/planets/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/constellations': typeof ConstellationsRoute
+  '/detection-lab': typeof DetectionLabRoute
+  '/methodology': typeof MethodologyRoute
+  '/mission-control': typeof MissionControlRoute
+  '/timeline': typeof TimelineRoute
+  '/planets/$slug': typeof PlanetsSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/constellations': typeof ConstellationsRoute
+  '/detection-lab': typeof DetectionLabRoute
+  '/methodology': typeof MethodologyRoute
+  '/mission-control': typeof MissionControlRoute
+  '/timeline': typeof TimelineRoute
+  '/planets/$slug': typeof PlanetsSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/constellations': typeof ConstellationsRoute
+  '/detection-lab': typeof DetectionLabRoute
+  '/methodology': typeof MethodologyRoute
+  '/mission-control': typeof MissionControlRoute
+  '/timeline': typeof TimelineRoute
+  '/planets/$slug': typeof PlanetsSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/constellations'
+    | '/detection-lab'
+    | '/methodology'
+    | '/mission-control'
+    | '/timeline'
+    | '/planets/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/constellations'
+    | '/detection-lab'
+    | '/methodology'
+    | '/mission-control'
+    | '/timeline'
+    | '/planets/$slug'
+  id:
+    | '__root__'
+    | '/'
+    | '/constellations'
+    | '/detection-lab'
+    | '/methodology'
+    | '/mission-control'
+    | '/timeline'
+    | '/planets/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ConstellationsRoute: typeof ConstellationsRoute
+  DetectionLabRoute: typeof DetectionLabRoute
+  MethodologyRoute: typeof MethodologyRoute
+  MissionControlRoute: typeof MissionControlRoute
+  TimelineRoute: typeof TimelineRoute
+  PlanetsSlugRoute: typeof PlanetsSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +130,59 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/constellations': {
+      id: '/constellations'
+      path: '/constellations'
+      fullPath: '/constellations'
+      preLoaderRoute: typeof ConstellationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/detection-lab': {
+      id: '/detection-lab'
+      path: '/detection-lab'
+      fullPath: '/detection-lab'
+      preLoaderRoute: typeof DetectionLabRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/methodology': {
+      id: '/methodology'
+      path: '/methodology'
+      fullPath: '/methodology'
+      preLoaderRoute: typeof MethodologyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mission-control': {
+      id: '/mission-control'
+      path: '/mission-control'
+      fullPath: '/mission-control'
+      preLoaderRoute: typeof MissionControlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/timeline': {
+      id: '/timeline'
+      path: '/timeline'
+      fullPath: '/timeline'
+      preLoaderRoute: typeof TimelineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/planets/$slug': {
+      id: '/planets/$slug'
+      path: '/planets/$slug'
+      fullPath: '/planets/$slug'
+      preLoaderRoute: typeof PlanetsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ConstellationsRoute: ConstellationsRoute,
+  DetectionLabRoute: DetectionLabRoute,
+  MethodologyRoute: MethodologyRoute,
+  MissionControlRoute: MissionControlRoute,
+  TimelineRoute: TimelineRoute,
+  PlanetsSlugRoute: PlanetsSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
