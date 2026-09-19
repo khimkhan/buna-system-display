@@ -423,7 +423,7 @@ export function transitGeometry(target: KnownTarget): {
 /** Generate a light curve for any target descriptor (catalog-derived included). */
 export function fetchLightCurveForTarget(target: KnownTarget): LightCurve {
   const isKepler = target.name.startsWith('Kepler');
-  const { period, durationHours } = transitGeometry(target);
+  const { period, durationHours, stellarMass, stellarMassSource } = transitGeometry(target);
 
   // The baseline span must contain enough transits for BLS to lock on; for
   // long-period planets we extend the "observing campaign" accordingly.
@@ -442,8 +442,8 @@ export function fetchLightCurveForTarget(target: KnownTarget): LightCurve {
     source,
     fluxPoints: points,
     stellarRadius: target.stellarRadius,
-    stellarMass: transitGeometry(target).stellarMass,
-    stellarMassSource: transitGeometry(target).stellarMassSource,
+    stellarMass,
+    stellarMassSource,
     stellarTemp: target.stellarTemp,
     stellarMag: 11 + (hashString(target.name) % 300) / 100,
     cadence,
