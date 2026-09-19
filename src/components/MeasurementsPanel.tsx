@@ -1,7 +1,14 @@
 import type { CatalogPlanet } from '@/lib/planetLore';
 import { classifyPlanet } from '@/lib/catalogQuery';
+import { resolveStellarMass, semiMajorAxisAu } from '@/lib/kepler';
 
 export default function MeasurementsPanel({ planet }: { planet: CatalogPlanet }) {
+  const { mass: starMass, source: massSource } = resolveStellarMass(
+    planet.stellarMass,
+    planet.stellarRadius,
+  );
+  const keplerDistance = semiMajorAxisAu(starMass, planet.periodDays);
+
   const rows: [string, string][] = [
     [
       'Period',
@@ -21,6 +28,14 @@ export default function MeasurementsPanel({ planet }: { planet: CatalogPlanet })
     [
       'Semi-major axis',
       planet.semiMajorAxisAu == null ? '—' : `${planet.semiMajorAxisAu.toFixed(4)} AU`,
+    ],
+    [
+      'Host-star mass',
+      starMass == null ? '—' : `${starMass.toFixed(3)} M☉${massSource === 'estimated' ? ' (est.)' : ''}`,
+    ],
+    [
+      'Orbital distance (Kepler III)',
+      keplerDistance == null ? '—' : `${keplerDistance.toFixed(4)} AU`,
     ],
     ['Equilibrium temp', planet.eqTempK == null ? '—' : `${Math.round(planet.eqTempK)} K`],
     ['Class', classifyPlanet(planet.radiusEarth)],

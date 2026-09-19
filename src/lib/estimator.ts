@@ -1,4 +1,5 @@
 import type { BlsPeak, LightCurve, PlanetEstimate } from '@/types';
+import { resolveStellarMass, semiMajorAxisAu as keplerSemiMajorAxis } from './kepler';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PLANET PARAMETER ESTIMATOR
@@ -26,12 +27,12 @@ import type { BlsPeak, LightCurve, PlanetEstimate } from '@/types';
 //    available, we flag it and cannot compute R_p.
 //
 // 3. SEMI-MAJOR AXIS (orbital distance)
-//    From Kepler's third law for a planet orbiting a star of mass M_★:
-//       a³ = G × M_★ × P² / (4π²)
-//    In convenient units (a in AU, P in years, M in solar masses):
-//       a³ = M_★ × P²
-//    We approximate M_★ ≈ R_★ (valid for main-sequence stars, rough but
-//    standard for estimates when mass isn't directly available).
+//    Newton's version of Kepler's third law, derived from his law of
+//    gravitation, for a planet orbiting a star of mass M_★:
+//       P² = 4π² a³ / (G M_★)   ⟹   a = ∛( G M_★ P² / 4π² )
+//    The host-star mass is a real input parameter here: it comes from the NASA
+//    archive (st_mass) when published, otherwise from the main-sequence
+//    relation M_★ ≈ R_★^1.25, and the provenance is reported in the UI.
 //
 // 4. EQUILIBRIUM TEMPERATURE (if stellar T_eff is known)
 //    T_eq = T_eff × √(R_★ / (2a)) × (1 - α)^0.25
@@ -88,12 +89,16 @@ export function estimatePlanet(
   // ── Semi-major axis from Kepler's 3rd law ───────────────────────────────────
   // a³ = M_★ × P², with P in years, a in AU, M in solar masses
   // Approximate M_★ ≈ R_★ for main-sequence stars
-  let semiMajorAxis: number | undefined;
-  if (stellarRadius && stellarRadius > 0) {
-    const periodYears = period / 365.25;
-    const stellarMass = stellarRadius; // rough approximation
-    semiMajorAxis = Math.cbrt(stellarMass * periodYears * periodYears);
-  }
+  const resolvedMass = resolveStellarMass(curve.stellarMass, stellarRadius);
+  const stellarMass = resolvedMass.mass ?? undefined;
+  const stellarMassSource =
+    curve.stellarMassSource ??
+    (resolvedMass.source === 'archive'
+      ? 'NASA Exoplanet Archive (st_mass)'
+      : resolvedMass.source === 'estimated'
+        ? 'Estimated from stellar radius'
+        : undefined);
+  const semiMajorAxis = keplerSemiMajorAxis(stellarMass, period) ?? undefined;
 
   // ── Equilibrium temperature ──────────────────────────────────────────────────
   let equilibriumTemp: number | undefined;
@@ -113,6 +118,8 @@ export function estimatePlanet(
     transitDuration: duration,
     stellarRadius: stellarRadius ?? 0,
     stellarRadiusSource,
+    ...(stellarMass != null ? { stellarMass } : {}),
+    ...(stellarMassSource ? { stellarMassSource } : {}),
     equilibriumTemp,
     semiMajorAxis,
   };

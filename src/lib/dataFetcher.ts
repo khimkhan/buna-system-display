@@ -1,4 +1,5 @@
 import type { FluxPoint, LightCurve, KnownTarget, SearchResult } from '@/types';
+import { resolveStellarMass, semiMajorAxisAu as keplerSemiMajorAxis } from './kepler';
 
 // Live internet lookups (NASA Exoplanet Archive TAP service, no API key needed).
 // The default KNOWN_TARGETS catalog below still powers the initial display.
@@ -392,25 +393,37 @@ export function transitGeometry(target: KnownTarget): {
   depthPpm: number;
   durationHours: number;
   semiMajorAxisAu: number;
+  stellarMass: number;
+  stellarMassSource: 'archive' | 'estimated';
 } {
   const period = Math.max(0.05, target.knownPeriod || 1);
   const rStar = target.stellarRadius > 0 ? target.stellarRadius : 1;
   const depth = Math.min(0.25, (target.knownRadius / (rStar * 109.2)) ** 2);
 
-  // a³ = M* × P²  (P in years, a in AU, M* ≈ R* for main-sequence stars)
-  const periodYears = period / 365.25;
-  const semiMajorAxisAu = Math.cbrt(Math.max(rStar, 0.1) * periodYears * periodYears);
+  // Newton's version of Kepler's third law: a = ∛( G M★ P² / 4π² )
+  const resolved = resolveStellarMass(target.stellarMass, rStar);
+  const stellarMass = resolved.mass ?? 1;
+  const stellarMassSource = resolved.source ?? 'estimated';
+  const semiMajorAxisAu = keplerSemiMajorAxis(stellarMass, period) ?? 0.05;
   const aInStellarRadii = Math.max(2, (semiMajorAxisAu * 215) / rStar);
   // T_dur ≈ (P/π) × (R*/a) for a central transit
   const durationHours = Math.max(0.4, (period / Math.PI) * (1 / aInStellarRadii) * 24);
 
-  return { period, depth, depthPpm: depth * 1e6, durationHours, semiMajorAxisAu };
+  return {
+    period,
+    depth,
+    depthPpm: depth * 1e6,
+    durationHours,
+    semiMajorAxisAu,
+    stellarMass,
+    stellarMassSource,
+  };
 }
 
 /** Generate a light curve for any target descriptor (catalog-derived included). */
 export function fetchLightCurveForTarget(target: KnownTarget): LightCurve {
   const isKepler = target.name.startsWith('Kepler');
-  const { period, durationHours } = transitGeometry(target);
+  const { period, durationHours, stellarMass, stellarMassSource } = transitGeometry(target);
 
   // The baseline span must contain enough transits for BLS to lock on; for
   // long-period planets we extend the "observing campaign" accordingly.
@@ -429,6 +442,8 @@ export function fetchLightCurveForTarget(target: KnownTarget): LightCurve {
     source,
     fluxPoints: points,
     stellarRadius: target.stellarRadius,
+    stellarMass,
+    stellarMassSource,
     stellarTemp: target.stellarTemp,
     stellarMag: 11 + (hashString(target.name) % 300) / 100,
     cadence,
