@@ -59,7 +59,8 @@ export function synthesizeDetection(target: KnownTarget, curve: LightCurve): Tra
 /** Estimate built directly from known parameters, used when BLS finds nothing. */
 export function synthesizeEstimate(target: KnownTarget, detection: TransitDetection, curve: LightCurve): PlanetEstimate {
   if (detection.bestPeak) return estimatePlanet(detection.bestPeak, curve);
-  const { period, depth, durationHours, semiMajorAxisAu } = transitGeometry(target);
+  const { period, depth, durationHours, semiMajorAxisAu, stellarMass, stellarMassSource } =
+    transitGeometry(target);
   return {
     orbitalPeriod: period,
     orbitalPeriodError: period * 1e-4,
@@ -70,6 +71,8 @@ export function synthesizeEstimate(target: KnownTarget, detection: TransitDetect
     transitDuration: durationHours,
     stellarRadius: target.stellarRadius,
     stellarRadiusSource: 'NASA Exoplanet Archive',
+    stellarMass,
+    stellarMassSource,
     semiMajorAxis: semiMajorAxisAu,
   };
 }
