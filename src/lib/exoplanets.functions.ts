@@ -16,6 +16,7 @@ interface TapRow {
   pl_trandep: number | null;
   pl_trandur: number | null;
   st_rad: number | null;
+  st_mass: number | null;
   st_teff: number | null;
   sy_dist: number | null;
   ra: number;
@@ -33,7 +34,7 @@ interface TapRow {
 export const getExoplanetCatalog = createServerFn({ method: 'GET' }).handler(
   async (): Promise<CatalogPlanet[]> => {
     const names = PLANET_LORE.map((l) => `'${l.plName.replace(/'/g, "''")}'`).join(',');
-    const query = `select pl_name,hostname,pl_orbper,pl_rade,pl_orbsmax,pl_eqt,pl_trandep,pl_trandur,st_rad,st_teff,sy_dist,ra,dec,disc_year,discoverymethod,disc_facility from pscomppars where pl_name in (${names})`;
+    const query = `select pl_name,hostname,pl_orbper,pl_rade,pl_orbsmax,pl_eqt,pl_trandep,pl_trandur,st_rad,st_mass,st_teff,sy_dist,ra,dec,disc_year,discoverymethod,disc_facility from pscomppars where pl_name in (${names})`;
 
     const url = `${TAP}?query=${encodeURIComponent(query)}&format=json`;
     const res = await fetch(url, { headers: { accept: 'application/json' } });
@@ -57,6 +58,7 @@ export const getExoplanetCatalog = createServerFn({ method: 'GET' }).handler(
         transitDepthPct: r.pl_trandep,
         transitDurationHours: r.pl_trandur,
         stellarRadius: r.st_rad,
+        stellarMass: r.st_mass,
         stellarTemp: r.st_teff,
         distanceLy: r.sy_dist == null ? null : Math.round(r.sy_dist * PC_TO_LY),
         ra: r.ra,
@@ -74,7 +76,7 @@ export const getExoplanetCatalog = createServerFn({ method: 'GET' }).handler(
 // ── Live search ──────────────────────────────────────────────────────────────
 
 const LIVE_COLUMNS =
-  'pl_name,hostname,discoverymethod,disc_year,pl_orbper,pl_rade,pl_eqt,pl_orbsmax,st_rad,st_teff,sy_dist,ra,dec';
+  'pl_name,hostname,discoverymethod,disc_year,pl_orbper,pl_rade,pl_eqt,pl_orbsmax,st_rad,st_mass,st_teff,sy_dist,ra,dec';
 
 async function runTap(query: string): Promise<LiveRow[]> {
   const url = `${TAP}?query=${encodeURIComponent(query)}&format=json`;

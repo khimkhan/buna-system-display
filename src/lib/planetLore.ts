@@ -27,6 +27,8 @@ export interface CatalogPlanet extends PlanetLore {
   transitDepthPct: number | null;
   transitDurationHours: number | null;
   stellarRadius: number | null;
+  /** Host-star mass in solar masses (NASA archive `st_mass`). */
+  stellarMass: number | null;
   stellarTemp: number | null;
   distanceLy: number | null;
   ra: number;

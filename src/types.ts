@@ -16,6 +16,8 @@ export interface LightCurve {
   source: 'kepler' | 'tess' | 'synthetic';
   fluxPoints: FluxPoint[];
   stellarRadius?: number;   // in solar radii
+  stellarMass?: number;     // in solar masses
+  stellarMassSource?: string; // 'archive' | 'estimated'
   stellarTemp?: number;     // in Kelvin
   stellarMag?: number;      // apparent magnitude
   cadence?: number;         // seconds between exposures
@@ -61,6 +63,8 @@ export interface PlanetEstimate {
   transitDuration: number;     // hours
   stellarRadius: number;       // solar radii
   stellarRadiusSource: string; // where the stellar radius came from
+  stellarMass?: number;        // solar masses (parameter of Kepler's 3rd law)
+  stellarMassSource?: string;  // where the stellar mass came from
   equilibriumTemp?: number;    // K (if stellar temp available)
   semiMajorAxis?: number;      // AU (estimated from Kepler's 3rd law)
 }
@@ -81,6 +85,8 @@ export interface KnownTarget {
   ticId?: string;
   kicId?: string;
   stellarRadius: number; // solar radii
+  stellarMass?: number;  // solar masses
+  stellarMassSource?: string;
   stellarTemp?: number;
   knownPlanet: string;
   knownPeriod: number;   // days

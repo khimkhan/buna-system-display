@@ -2,6 +2,7 @@ import { queryOptions } from '@tanstack/react-query';
 import type { CatalogPlanet } from './planetLore';
 import type { KnownTarget, PlanetVisualType } from '@/types';
 import { getExoplanetCatalog } from './exoplanets.functions';
+import { resolveStellarMass } from './kepler';
 
 export const catalogQueryOptions = () =>
   queryOptions({
@@ -15,6 +16,10 @@ export function toTarget(p: CatalogPlanet): KnownTarget {
   return {
     name: p.hostName,
     stellarRadius: p.stellarRadius ?? 1,
+    ...(() => {
+      const { mass, source } = resolveStellarMass(p.stellarMass, p.stellarRadius);
+      return mass ? { stellarMass: mass, stellarMassSource: source ?? 'estimated' } : {};
+    })(),
     stellarTemp: p.stellarTemp ?? undefined,
     knownPlanet: p.plName,
     knownPeriod: p.periodDays,

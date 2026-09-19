@@ -43,6 +43,7 @@ export interface LiveRow {
   pl_eqt?: number | null;
   pl_orbsmax?: number | null;
   st_rad: number | null;
+  st_mass?: number | null;
   st_teff: number | null;
   sy_dist: number | null;
   ra?: number | null;
@@ -74,6 +75,7 @@ export function rowToCatalogPlanet(r: LiveRow): CatalogPlanet | null {
     transitDepthPct: null,
     transitDurationHours: null,
     stellarRadius: r.st_rad,
+    stellarMass: r.st_mass ?? null,
     stellarTemp: r.st_teff,
     distanceLy: r.sy_dist == null ? null : Math.round(r.sy_dist * PC_TO_LY),
     ra: r.ra ?? 0,
