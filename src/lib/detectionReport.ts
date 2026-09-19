@@ -1,6 +1,7 @@
 import type { CatalogPlanet } from "./planetLore";
 import type { LightCurve, PlanetEstimate, TransitDetection } from "@/types";
 import { classifyPlanet } from "./catalogQuery";
+import { resolveStellarMass, semiMajorAxisAu as keplerSemiMajorAxis } from "./kepler";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DETECTION REPORT
@@ -214,6 +215,15 @@ export function buildParameterRows(
   estimate: PlanetEstimate | null,
   constellationName?: string,
 ): ParameterRow[] {
+  // Newton's version of Kepler's third law, using the host-star mass as input.
+  const resolvedMass = resolveStellarMass(
+    planet.stellarMass ?? estimate?.stellarMass ?? null,
+    planet.stellarRadius,
+  );
+  const mass = resolvedMass.mass;
+  const massSource = resolvedMass.source;
+  const keplerDistance = keplerSemiMajorAxis(mass, planet.periodDays) ?? estimate?.semiMajorAxis ?? null;
+
   return [
     { label: "Planet radius", value: fmt(planet.radiusEarth, 2, "R⊕"), provenance: "archive" },
     {
@@ -228,10 +238,23 @@ export function buildParameterRows(
       value:
         planet.semiMajorAxisAu != null
           ? fmt(planet.semiMajorAxisAu, 4, "AU")
-          : estimate?.semiMajorAxis
-            ? `${estimate.semiMajorAxis.toFixed(4)} AU`
+          : keplerDistance != null
+            ? `${keplerDistance.toFixed(4)} AU`
             : "Data unavailable",
       provenance: planet.semiMajorAxisAu != null ? "archive" : "simulated",
+    },
+    {
+      label: "Host-star mass",
+      value: mass != null ? fmt(mass, 3, "M☉") : "Data unavailable",
+      provenance: massSource === "archive" ? "archive" : massSource ? "simulated" : null,
+      hint:
+        massSource === "estimated" ? "Estimated from the stellar radius (M ≈ R^1.25)" : undefined,
+    },
+    {
+      label: "Orbital distance (Kepler III)",
+      value: keplerDistance != null ? `${keplerDistance.toFixed(4)} AU` : "Data unavailable",
+      provenance: keplerDistance != null ? "simulated" : null,
+      hint: "a = ∛(G·M★·P²/4π²) from the star mass and period",
     },
     { label: "Eccentricity", value: "Data unavailable", provenance: null },
     {

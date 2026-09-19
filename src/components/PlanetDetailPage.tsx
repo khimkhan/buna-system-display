@@ -13,6 +13,7 @@ import {
 } from "@/lib/syntheticDetection";
 import { buildDetectionReport, buildParameterRows, STATUS_STYLE } from "@/lib/detectionReport";
 import { setSimSettings, useSimSettings } from "@/lib/simSettings";
+import { resolveStellarMass, semiMajorAxisAu } from "@/lib/kepler";
 import OrbitalAnimation from "./OrbitalAnimation";
 import SimulationControls from "./SimulationControls";
 import LightCurveStudio from "./LightCurveStudio";
@@ -21,6 +22,7 @@ import LiveObservation from "./LiveObservation";
 import DetectionPipeline from "./DetectionPipeline";
 import DetectionConfidencePanel from "./DetectionConfidencePanel";
 import OrbitalParametersPanel from "./OrbitalParametersPanel";
+import KeplerDistancePanel from "./KeplerDistancePanel";
 import CollapsibleCard from "./CollapsibleCard";
 
 import {
@@ -37,6 +39,7 @@ import {
   BookOpen,
   Sparkles,
   Database,
+  Scale,
 } from "lucide-react";
 
 interface Props {
@@ -122,6 +125,14 @@ export default function PlanetDetailPage({ planet }: Props) {
   const paramRows = useMemo(
     () => buildParameterRows(planet, estimate, constellation?.name),
     [planet, estimate, constellation],
+  );
+  const { mass: starMass, source: massSource } = useMemo(
+    () => resolveStellarMass(planet.stellarMass ?? estimate?.stellarMass ?? null, planet.stellarRadius),
+    [planet.stellarMass, planet.stellarRadius, estimate?.stellarMass],
+  );
+  const keplerDistance = useMemo(
+    () => semiMajorAxisAu(starMass, planet.periodDays),
+    [starMass, planet.periodDays],
   );
   const statusStyle = STATUS_STYLE[report.status];
   const planetRadiusJupiter = (planet.radiusEarth / 11.2).toFixed(2);
@@ -266,7 +277,10 @@ export default function PlanetDetailPage({ planet }: Props) {
       {/* ── 7. DETECTION CONFIDENCE ──────────────────────────────────────── */}
       <DetectionConfidencePanel report={report} />
 
-      {/* ── 8. ORBITAL PARAMETERS ────────────────────────────────────────── */}
+      {/* ── 8. ORBITAL DISTANCE FROM THE HOST-STAR MASS ──────────────────── */}
+      <KeplerDistancePanel planet={planet} estimate={estimate} />
+
+      {/* ── 9. ORBITAL PARAMETERS ────────────────────────────────────────── */}
       <OrbitalParametersPanel rows={paramRows} />
 
       {/* ── 9. QUICK FACTS (collapsible) ─────────────────────────────────── */}
@@ -295,6 +309,18 @@ export default function PlanetDetailPage({ planet }: Props) {
             icon={<Sun className="h-4 w-4" />}
             label="Star radius"
             value={planet.stellarRadius ? `${planet.stellarRadius.toFixed(2)} R☉` : "Data unavailable"}
+          />
+          <FactCard
+            icon={<Scale className="h-4 w-4" />}
+            label="Star mass"
+            value={starMass != null ? `${starMass.toFixed(3)} M☉` : "Data unavailable"}
+            sub={massSource === "estimated" ? "Estimated" : "NASA archive"}
+          />
+          <FactCard
+            icon={<Ruler className="h-4 w-4" />}
+            label="Orbital distance"
+            value={keplerDistance != null ? `${keplerDistance.toFixed(4)} AU` : "Data unavailable"}
+            sub="Kepler III · from star mass"
           />
           <FactCard
             icon={<Thermometer className="h-4 w-4" />}
